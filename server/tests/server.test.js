@@ -10,7 +10,9 @@ const todos = [{
     text: 'First test to do'
 }, {
     _id: new ObjectID(),
-    text: 'Second test to do'
+    text: 'Second test to do',
+    completed: true,
+    completedAt: 1545555555
 }
 ]
 
@@ -147,4 +149,46 @@ describe('DELETE /todos/:id', () => {
             .expect(404)
             .end(done)
     });
+})
+
+//// New test cases for PATCH /todos/:id
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo', (done) => {
+
+        const patchObj = {
+            completed: true,
+            text: "This is my new text"
+        }
+
+        request(app)
+            .patch(`/todos/${todos[0]._id.toHexString()}`)
+            .send(patchObj)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(patchObj.text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(typeof res.body.todo.completedAt).toBe('number');
+            })
+            .end(done)
+    });
+
+    it('should clear completedAt when todo is not completed', (done) => {
+
+        const patchObj2 = {
+            completed: false,
+            text: "This is the second patch test"
+        }
+
+        request(app)
+            .patch(`/todos/${todos[0]._id.toHexString()}`)
+            .send(patchObj2)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(patchObj2.text);
+                expect(res.body.todo.completed).toBeFalsy();;
+                expect(res.body.todo.completedAt).toBeFalsy();
+            })
+            .end(done)
+    })
 })
